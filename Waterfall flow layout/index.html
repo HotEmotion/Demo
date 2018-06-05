@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>瀑布流布局</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        #template{
+            position: relative;
+        }
+        .box{
+            padding: 10px 0 0 10px;
+            float: left;
+        }
+        .box-i{
+            width: 400px;
+            border: 1px solid gray;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 2px gray;
+
+        }
+        .box-i img{
+            width: 100%;
+
+        }
+    </style>
+    <script>
+        var  data=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+        function getElement(id) {
+            if(id.substr(0,1)=='.'){
+                return document.getElementsByClassName(id.substr(1));
+            }
+            return document.getElementById(id);
+        }
+        function addImg() {
+            var box=getElement('template').innerHTML.trim();
+            var out_main=[];
+            for (var i in data){
+                var _box_=box.replace(/{{index}}/g,data[i]);
+                out_main.push(_box_);
+            }
+            getElement('template').innerHTML=out_main.join('');
+        }
+        function waterFall(parent,box){
+            //1.将div.main的class为box的元素都取出来
+            var oParent=getElement(parent);
+            var oBoxs=getClass(oParent,box);
+            //2.获得图片的列数
+            var oBoxW=oBoxs[0].offsetWidth;
+            var numColumn=Math.floor(document.documentElement.offsetWidth/oBoxW);
+            //3.设置容器的宽度并居中
+            oParent.style.cssText='width:'+numColumn*oBoxW+'px;margin:0 auto;';
+            //4.给盒子排序
+            var colHeight=[];
+            var minHeight,index;
+            for (var i=0;i<oBoxs.length;i++){
+                if(i<numColumn){
+                    colHeight.push(oBoxs[i].offsetHeight)
+                }else {
+                    minHeight=Math.min.apply(null,colHeight);
+                    index=getMinIndex(minHeight,colHeight);
+                    oBoxs[i].style.position='absolute';
+                    oBoxs[i].style.top=minHeight+'px';
+                    oBoxs[i].style.left=oBoxs[index].offsetLeft+'px';
+                    colHeight[index] += oBoxs[i].offsetHeight;
+                }
+            }
+        }
+        function getClass(parent,boxName){
+            var divs=parent.getElementsByTagName('*');
+            var  oBoxs=[];
+            for (var i=0;i<divs.length;i++){
+                if(divs[i].className==boxName){
+                    oBoxs.push(divs[i]);
+                }
+            }
+            return oBoxs;
+        }
+        function getMinIndex(min,cols){
+            var index;
+            for (var i=0;i<cols.length;i++){
+                if(min==cols[i]){
+                    index=i;
+                }
+            }
+            return index;
+        }
+        function checkScrollBar(){
+            var oParent=getElement('template');
+            var oBoxs=getClass(oParent,'box');
+            var oBoxH=oBoxs[oBoxs.length-1].offsetTop+oBoxs[oBoxs.length-1].offsetHeight;
+            var scrollH=document.body.scrollHeight||document.documentElement.scrollHeight;
+            var height=document.body.clientHeight||document.documentElement.clientHeight;
+            return (oBoxH<scrollH+height)?true:false;
+        }
+        window.onload=function () {
+            addImg();
+            setTimeout(function () {
+                waterFall('template','box');
+            },100);
+            window.onscroll=function () {
+                var data={"data":[{"src":"1.jpeg"},{"src":"2.jpeg"},{"src":"3.jpeg"},{"src":"4.jpeg"}]};
+                var main=getElement("template");
+                if(checkScrollBar()){
+                    for (var i=0;i<data.data.length;i++){
+                        var oBox=document.createElement("div");
+                        oBox.className="box";
+                        main.appendChild(oBox);
+                        var oPic=document.createElement("div");
+                        oBox.appendChild(oPic);
+                        oPic.className="box-i";
+                        var img=document.createElement("img");
+                        img.src="img/"+data.data[i].src;
+                        oPic.appendChild(img);
+                    }
+                    waterFall('template','box');
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="main" id="template">
+        <div class="box">
+            <div class="box-i">
+                <img src="img/{{index}}.jpeg" alt="">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

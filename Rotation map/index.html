@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        .main,
+        .main-i,
+        .slider{
+            width: 1200px;
+            height: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .main{
+            overflow: hidden;
+        }
+        .main-i{
+            overflow: hidden;
+            position: absolute;
+            right: 50%;
+            -webkit-transition: all 1.6s;
+            opacity: 0;
+            z-index: 2;
+        }
+        .margin_right{
+            right: -50%;
+        }
+        .main-i img{
+            width: 100%;
+            position: absolute;
+            top: 50%;
+        }
+        .caption{
+            width: 300px;
+            height: 200px;
+            text-align: right;
+            position: absolute;
+            top: 100px;
+            left: 200px;
+            z-index: 9;
+        }
+        .caption h1,.caption h2{
+            -webkit-transition: all 0.8s 1.2s;
+            font-family: 方正启体简体;
+        }
+        .caption h1{
+            font-size: 40px;
+            color: #343434;
+            margin-right: 15px;
+        }
+        .caption h2{
+            font-size: 32px;
+            margin-right: -10px;
+            color: #F7FFF7;
+        }
+        .ctrl{
+            width: 1200px;
+            height: 13px;
+            text-align: center;
+            line-height: 13px;
+        }
+        .ctrl .ctrl-i{
+            display: inline-block;
+            width: 150px;
+            background-color: #6969B3;
+            position: relative;
+            height: 13px;
+            box-shadow: 0 2px 2px #6969B3;
+            margin-left: 1px;
+        }
+        .ctrl .ctrl-i img{
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            width: 150px;
+            opacity: 0;
+            -webkit-transition: all 0.2s;
+        }
+        .ctrl .ctrl-i:hover{
+            background-color: #533A7B;
+            box-shadow: 0 2px 2px #533A7B;
+        }
+        .ctrl .ctrl-i:hover img{
+            bottom: 13px;
+            opacity: 1;
+            -webkit-box-reflect: below 0px -webkit-gradient(
+                linear,
+                left top,
+                left bottom,
+                from(transparent),
+                color-stop(50%,transparent),
+                to(rgba(255,255,255,.3))
+            );
+            z-index: 9;
+        }
+        .ctrl .ctrl-i_active{
+            background-color: #533A7B;
+            box-shadow: 0 2px 2px #533A7B;
+        }
+        .ctrl .ctrl-i_active:hover img{
+            opacity: 0;
+        }
+        #main-background,
+        .main .main-i_active{
+            opacity: 1;
+            right: 0;
+            z-index: 2;
+        }
+        #main-background{
+            z-index: 1;
+        }
+        .main .main-i_active .caption h1,.main-i_active .caption h2{
+            margin-right: 0;
+        }
+    </style>
+    <script>
+        //1.定义数据
+        var data=[
+            {img:1,h1:"翩若惊鸿",h2:"宛若游龙"},
+            {img:2,h1:"有美一人",h2:"宛如清扬"},
+            {img:3,h1:"袅娜少女羞",h2:"岁月无忧愁"},
+            {img:4,h1:"盼顾生辉",h2:"撩人心怀"},
+            {img:5,h1:"丹唇列素齿",h2:"翠彩发峨眉"},
+            {img:6,h1:"巧笑倩兮",h2:"美目盼兮"},
+        ];
+        //2.通用函数，获得DOM元素
+        function g(id) {
+            if(id.substr(0,1)=='.'){
+                return document.getElementsByClassName(id.substr(1));
+            }
+            return document.getElementById(id);
+        }
+        function addSliders() {
+            var _tpl_main=g('template-main').innerHTML.trim();
+            var _tpl_ctrl=g('template-ctrl').innerHTML.trim();
+            var out_main=[];
+            var out_ctrl=[];
+            for (var i in data){
+                var _html_main=_tpl_main.replace(/{{index}}/g,data[i].img)
+                                        .replace(/{{h1}}/g,data[i].h1)
+                                        .replace(/{{h2}}/g,data[i].h2)
+                                        .replace(/{{css}}/g,['','margin_right'][i%2]);
+                var _html_ctrl=_tpl_ctrl.replace(/{{index}}/g,data[i].img);
+                out_main.push(_html_main);
+                out_ctrl.push(_html_ctrl);
+            }
+            g('template-main').innerHTML=out_main.join('');
+            g('template-ctrl').innerHTML=out_ctrl.join('');
+            g('template-main').innerHTML+= _tpl_main.replace(/{{index}}/g,'{{index}}')
+                                                    .replace(/{{h1}}/g,data[i].h1)
+                                                    .replace(/{{h2}}/g,data[i].h2);
+            g('main-{{index}}').id='main-background';
+        }
+        function switchSlider(n){
+            var clear_main=g(".main-i");
+            var clear_ctrl=g(".ctrl-i");
+            for(var i=0;i<clear_ctrl.length;i++){
+                clear_main[i].className=clear_main[i].className.replace('main-i_active','');
+                clear_ctrl[i].className=clear_ctrl[i].className.replace('ctrl-i_active','');
+            }
+            var main_active=g("main-"+n);
+            var ctrl_active=g("ctrl-"+n);
+            main_active.className+=" main-i_active";
+            ctrl_active.className+=" ctrl-i_active";
+            setTimeout(function () {
+                g('main-background').innerHTML=main_active.innerHTML;
+            },1600)
+
+        }
+        function movePicture(){
+            var pic=g('.picture');
+            for (var i=0;i<pic.length;i++){
+                pic[i].style.marginTop=-1*(pic[i].clientHeight/2)+'px';
+            }
+        }
+        window.onload=function () {
+            addSliders();
+            switchSlider(1);
+            setTimeout(function () {
+                movePicture();
+            },20);
+        }
+    </script>
+</head>
+<body>
+    <div class="slider">
+        <div class="main" id="template-main">
+            <div class="main-i {{css}}" id="main-{{index}}">
+                <div class="caption">
+                    <h1>{{h1}}</h1>
+                    <h2>{{h2}}</h2>
+                </div>
+                <img src="img/{{index}}.jpg" alt="" class="picture">
+            </div>
+        </div>
+        <div class="ctrl" id="template-ctrl">
+            <a href="javascript:switchSlider({{index}})" class="ctrl-i" id="ctrl-{{index}}"><img src="img/{{index}}.jpg" alt=""></a>
+        </div>
+    </div>
+</body>
+</html>

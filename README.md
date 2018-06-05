@@ -1,13 +1,5 @@
-# Demo
+# Rotation-map
 
-这是在学习JS过程中的一些小Demo
-
-/Rotation map
+A carousel with a thumbnail effect
 
 一个带有缩略图效果的的轮播图
-
-/Gallery effect
-
-画廊效果，点击图片放大并在中心位置显示，再次点击中心图片翻转到背面显示介绍，其他图片位置和角度随机分布。
-
-/

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>画廊特效</title>
+    <script src="data.js"></script>
+    <style>
+        @font-face {
+            font-family: 'iconfont';  /* project id 563153 */
+            src: url('https://at.alicdn.com/t/font_563153_614mvu9b0o3tmx6r.eot');
+            src: url('https://at.alicdn.com/t/font_563153_614mvu9b0o3tmx6r.eot?#iefix') format('embedded-opentype'),
+            url('https://at.alicdn.com/t/font_563153_614mvu9b0o3tmx6r.woff') format('woff'),
+            url('https://at.alicdn.com/t/font_563153_614mvu9b0o3tmx6r.ttf') format('truetype'),
+            url('https://at.alicdn.com/t/font_563153_614mvu9b0o3tmx6r.svg#iconfont') format('svg');
+        }
+        *{
+            padding: 0;
+            margin: 0;
+            color: #555555;
+            font-size: 14px;
+            font-family: "思源宋体 CN Light";
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrap{
+            width: 1200px;
+            height: 600px;
+            background-color: black;
+            position: absolute;
+            top: 50%;
+            margin-top: -300px;
+            left: 50%;
+            margin-left: -600px;
+            overflow: hidden;
+            -webkit-perspective: 800px;
+        }
+        .photo{
+            width: 260px;
+            height: 340px;
+            position: absolute;
+            background-color: white;
+            -webkit-transition: all 0.8s;
+            top: 50%;
+            left: 50%;
+            margin: -160px 0 0 -130px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .photo_center{
+            top: 50%;
+            left: 50%;
+            margin: -160px 0 0 -130px;
+            z-index: 999;
+        }
+        .photo-wrap{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-transform-style: preserve-3d;
+            -webkit-transition: all 0.8s;
+            -webkit-transform-origin: 0% 50%;
+        }
+        .photo-wrap .side-front{
+            -webkit-transform: rotateY(0deg);
+        }
+        .photo-wrap .side-back{
+            -webkit-transform: rotateY(180deg);
+        }
+        .photo_front .photo-wrap{
+            -webkit-transform: translate(0px,0px) rotateY(0deg);
+        }
+        .photo_back .photo-wrap{
+            -webkit-transform: translate(260px,0px) rotateY(180deg);
+        }
+        .photo-wrap .side{
+            -webkit-backface-visibility: hidden;
+        }
+        .photo .side{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .photo .side-front .image{
+            width: 100%;
+            height: 280px;
+            line-height: 280px;
+            overflow: hidden;
+        }
+        .photo .side-front .image img{
+            width: 100%;
+        }
+        .photo .side-front .caption{
+            text-align: center;
+            font-size: 16px;
+            line-height: 50px;
+        }
+        .photo .side-back .desc{
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5em;
+        }
+        .nav{
+            width: 80%;
+            height: 30px;
+            position: absolute;
+            bottom: 20px;
+            left: 10%;
+            text-align: center;
+            line-height: 30px;
+        }
+        .nav .ctrl{
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #999999;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index:999;
+            -webkit-transform: scale(0.48);
+        }
+        .nav .ctrl:after{
+            content: "\e6ca";
+            font-size: 150%;
+            font-family: iconfont;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            opacity: 0;
+
+        }
+        .nav .ctrl_current{
+            background-color: #666666;
+            -webkit-transform: scale(1);
+            -webkit-transition: all 0.8s;
+        }
+        .nav .ctrl_current:after{
+            opacity: 1;
+        }
+        .nav .ctrl_back{
+            -webkit-transform: rotateY(180deg);
+            background-color: #555;
+        }
+    </style>
+    <script>
+        window.onload=function () {
+            outPut();
+            rsort(random([0,20]));
+        }
+        //翻转图片;
+        function turn(elem) {
+            var cls= elem.className;
+            var n=elem.id.split('_')[1];
+            var ctr_cls=getElement('#ctrl-'+n).className;
+            if(!/photo_center/.test(cls)){
+                return rsort(n);
+            }
+            if(/photo_front/.test(cls)){
+                cls=cls.replace(/photo_front/,'photo_back');
+            }else {
+                cls=cls.replace(/photo_back/,'photo_front');
+            }
+            elem.className=cls;
+            if(!/ctrl_back/.test(ctr_cls)){
+                getElement('#ctrl-'+n).className+=' ctrl_back';
+            }else {
+                getElement('#ctrl-'+n).className=ctr_cls.replace(/ctrl_back/,'');
+            }
+        }
+        //获得DOM元素
+        function getElement(selector) {
+            return selector.substr(0,1)=='.'?
+                document.getElementsByClassName(selector.substr(1)):
+                document.getElementById(selector.substr(1));
+
+        }
+        //输出信息
+        function outPut() {
+            var filmArr=getData();
+            var template=getElement('#wrap').innerHTML;
+            var html=[];
+            var nav=[];
+            for(var i=0;i<filmArr.length;i++){
+                var _html=template.replace(/{{img}}/g,filmArr[i].img)
+                                    .replace(/{{caption}}/g,filmArr[i].caption)
+                                    .replace(/{{desc}}/g,filmArr[i].desc)
+                                    .replace(/{{index}}/g,i);
+                var _span_='<span id="ctrl-'+i+'" class="ctrl" onclick="turn(getElement(\'#photo_'+i+'\'))"></span>';
+                nav.push(_span_);
+                html.push(_html);
+
+            }
+            html.push('<div class="nav" id="nav">'+nav.join('')+'</div>');
+            return getElement('#wrap').innerHTML=html.join('');
+        }
+        //图片排序
+        function rsort(n) {
+            var photos=getElement('.photo');
+            var ctrls=getElement('.ctrl')
+            var photoArr=[];
+            for (var i=0;i<photos.length;i++){
+                photos[i].className=photos[i].className.replace(/photo_center/,'');
+                photos[i].className=photos[i].className.replace(/photo_back/,'photo_front');
+                photoArr.push(photos[i]);
+                photos[i].style.top='';
+                photos[i].style.left='';
+                photos[i].style.webkitTransform='rotate(360deg) scale(1.3)';
+
+                ctrls[i].className=ctrls[i].className.replace(/ctrl_current/,'');
+                ctrls[i].className=ctrls[i].className.replace(/ctrl_back/,'');
+            }
+            var _centerPhoto_=getElement('#photo_'+n);
+            var _cls=_centerPhoto_.className;
+            _cls+=' photo_center';
+            getElement('#photo_'+n).className=_cls;
+
+            _centerPhoto_=photoArr.splice(n,1);
+            var photos_left=photoArr.splice(0,Math.ceil(photoArr.length/2));
+            var photos_right=photoArr;
+            var rangeis=range()
+            for(var l in photos_left){
+                photos_left[l].style.left=random(rangeis.left.x)+'px';
+                photos_left[l].style.top=random(rangeis.left.y)+'px';
+                photos_left[l].style.webkitTransform='rotateZ('+random([-150,150])+'deg) scale(1)';
+            }
+            for (var r in photos_right){
+                photos_right[r].style.left=random(rangeis.right.x)+'px';
+                photos_right[r].style.top=random(rangeis.right.y)+'px';
+                photos_right[r].style.webkitTransform='rotateZ('+random([-150,150])+'deg) scale(1)';
+            }
+
+            getElement('#ctrl-'+n).className+=' ctrl_current';
+        }
+        //随机数
+        function random( range) {
+            var min = Math.min.apply(null,range);
+            var max = Math.max.apply(null,range);
+            var diff = max - min;
+            var num = Math.ceil(Math.random()*diff+min);
+            return num;
+        }
+        //左右区域范围函数
+        function range() {
+            var range={
+                'left':{
+                    'x':[],
+                    'y':[],
+                },
+                'right':{
+                   'x':[],
+                   'y':[],
+                }
+            };
+            var cw=getElement('#wrap').clientWidth;
+            var ch=getElement('#wrap').clientHeight;
+            var pw=getElement('.photo')[0].clientWidth;
+            var ph=getElement('.photo')[0].clientHeight;
+            range.left.x=[Math.ceil(0-pw/2),Math.ceil(cw/2-pw)];
+            range.left.y=range.right.y=[Math.ceil(0-ph/2),Math.ceil(ch-ph/2)];
+            range.right.x=[Math.ceil(cw/2-pw/2),Math.ceil(cw-pw/2)];
+            return range;
+        }
+    </script>
+</head>
+
+<body onselect="return false">
+    <div id="wrap" class="wrap">
+        <div class="photo photo_front" onclick="turn(this)" id="photo_{{index}}">
+           <div class="photo-wrap">
+               <div class="side side-front">
+                   <p class="image"><img src="img/{{img}}.jpg" alt=""></p>
+                   <p class="caption">{{caption}}</p>
+               </div>
+               <div class="side side-back">
+                   <p class="desc">{{desc}}</p>
+               </div>
+           </div>
+        </div>
+    </div>
+</body>
+</html>
