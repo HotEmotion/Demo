@@ -26,3 +26,7 @@ JS实现的瀑布流布局
 
 ![image](https://github.com/HotEmotion/Demo/blob/master/img-Folder/Waterfall.png)
 
+
+JS实现的2048游戏
+
+![image](https://github.com/HotEmotion/Demo/blob/master/img-Folder/2048.png)
